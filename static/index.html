@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Grid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Poppins:wght@400;600&display=swap');
+
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000"><circle cx="2" cy="2" r="1" fill="rgba(255,255,255,0.3)"/></svg>') repeat;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            text-align: center;
+            background: linear-gradient(to right, #ec4899, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 3rem 0;
+            text-shadow: 0 0 15px rgba(236, 72, 153, 0.7), 0 0 30px rgba(168, 85, 247, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #06b6d4;
+            text-shadow: 0 0 8px rgba(6, 182, 212, 0.5);
+        }
+
+        section {
+            padding: 2rem;
+            margin: 0 1rem;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.3), rgba(15, 23, 42, 0.3));
+            border-radius: 0.5rem;
+            animation: fadeIn 1s ease-in;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e293b;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(6, 182, 212, 0.3);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            font-size: 1rem;
+        }
+
+        th {
+            background: linear-gradient(to right, #312e81, #0d9488);
+            color: #f1f5f9;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        tr:nth-child(even) {
+            background-color: #334155;
+        }
+
+        tr:hover {
+            background-color: #0d9488;
+            transition: background-color 0.3s ease;
+        }
+
+        td {
+            color: #f1f5f9;
+        }
+
+        a {
+            color: #ec4899;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #f472b6;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #06b6d4;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 15px rgba(236, 72, 153, 0.7), 0 0 30px rgba(168, 85, 247, 0.5);
+            }
+            to {
+                text-shadow: 0 0 25px rgba(236, 72, 153, 0.9), 0 0 40px rgba(168, 85, 247, 0.7);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 0.875rem;
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 4rem;
+            }
+
+            h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Crypto Grid</h1>
+
+    <section class="mb-12">
+        <h2>General Information</h2>
+        <div id="general-info">
+            <div class="spinner"></div>
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2>Prices</h2>
+        <div id="prices">
+            <div class="spinner"></div>
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2>News</h2>
+        <div id="news">
+            <div class="spinner"></div>
+        </div>
+    </section>
+
+    <section class="mb-12">
+        <h2>Market Sentiment</h2>
+        <div id="sentiment">
+            <div class="spinner"></div>
+        </div>
+    </section>
+
+    <script>
+    async function fetchData(endpoint) {
+        try {
+            const response = await fetch(endpoint);
+            if (!response.ok) throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching ${endpoint}:`, error);
+            return { error: error.message };
+        }
+    }
+
+    function formatDateTime(dateString) {
+        if (!dateString || typeof dateString !== 'string') return 'N/A';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
+            const pad = n => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+        } catch (error) {
+            console.error('Error formatting date:', dateString, error);
+            return 'N/A';
+        }
+    }
+
+    function createTable(data, columns, linkColumn = null) {
+        if (!data || data.error || !Array.isArray(data)) {
+            return `<p class="text-red-500">${data?.error || 'Error loading data'}</p>`;
+        }
+        let table = '<table>';
+        table += '<thead><tr>';
+        columns.forEach(col => {
+            table += `<th>${col.header}</th>`;
+        });
+        table += '</tr></thead><tbody>';
+        if (data.length === 0) {
+            table += `<tr><td colspan="${columns.length}">No data available</td></tr>`;
+        } else {
+            data.forEach(row => {
+                table += '<tr>';
+                columns.forEach(col => {
+                    let value = row[col.key];
+                    try {
+                        if (col.format) {
+                            value = col.format(value);
+                        } else if (col.key === linkColumn) {
+                            value = `<a href="${value || '#'}" target="_blank">LINK</a>`;
+                        }
+                        table += `<td>${value || 'N/A'}</td>`;
+                    } catch (error) {
+                        console.error(`Error processing column ${col.key}:`, error);
+                        table += `<td>N/A</td>`;
+                    }
+                });
+                table += '</tr>';
+            });
+        }
+        table += '</tbody></table>';
+        return table;
+    }
+
+    async function loadGeneralInfo() {
+        const data = await fetchData('/api/general_info');
+        const columns = [
+            { header: 'Coin', key: 'coin' },
+            { header: 'Full Name', key: 'full_name' },
+            { header: 'Launch Date', key: 'launch_date' },
+            { header: 'Algorithm', key: 'algorithm' },
+            { header: 'Proof Type', key: 'proof_type' },
+            { header: 'Price (USD)', key: 'price_usd' },
+            { header: 'Market Cap', key: 'market_cap_usd' }
+        ];
+        document.getElementById('general-info').innerHTML = createTable(data, columns);
+    }
+
+    async function loadPrices() {
+        const data = await fetchData('/api/prices');
+        const columns = [
+            { header: 'Coin', key: 'coin' },
+            { header: 'Price (USD)', key: 'price_usd' }
+        ];
+        document.getElementById('prices').innerHTML = createTable(data, columns);
+    }
+
+    async function loadNews() {
+        const response = await fetchData('/api/news');
+        console.log('Raw news response:', response); // Debug: Log raw API response
+        let data = response;
+        if (response && !Array.isArray(response)) {
+            if (response.news) {
+                data = response.news.map(item => ({
+                    title: item.title || item.headline || 'N/A',
+                    source: item.source || item.publisher || 'N/A',
+                    link: item.link || item.url || '#',
+                    time_utc: item.time_utc || item.timestamp || 'N/A'
+                }));
+            } else {
+                data = [];
+            }
+        }
+        console.log('Processed news data:', data); // Debug: Log processed data
+        const columns = [
+            { header: 'Title', key: 'title' },
+            { header: 'Source', key: 'source' },
+            { header: 'Link', key: 'link' },
+            { header: 'Time', key: 'time_utc', format: formatDateTime }
+        ];
+        document.getElementById('news').innerHTML = createTable(data, columns, 'link');
+    }
+
+    async function loadSentiment() {
+        const data = await fetchData('/api/sentiment');
+        const columns = [
+            { header: 'Symbol', key: 'symbol' },
+            { header: 'Score', key: 'score' },
+            { header: 'Interpretation', key: 'interpretation' }
+        ];
+        document.getElementById('sentiment').innerHTML = createTable(data, columns);
+    }
+
+    window.onload = () => {
+        loadGeneralInfo();
+        loadPrices();
+        loadNews();
+        loadSentiment();
+    };
+</script>
+</body>
+</html>
