@@ -13,7 +13,7 @@ def fetch_prices():
     if not api_key:
         raise ValueError("CRYPTOCOMPARE_API_KEY environment variable not set")
 
-    url = f"https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,ADA,XRP,SOL,DOGE,DOT,SHIB,TRX,APT,NEAR,HBAR&tsyms=USD&api_key={api_key}"
+    url = f"https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,ADA,XRP,SOL,DOGE,DOT,TRX,APT,NEAR,HBAR&tsyms=USD&api_key={api_key}"
 
     session = requests.Session()
     retries = Retry(total=2, backoff_factor=0.5, status_forcelist=[429, 500, 502, 503, 504])
@@ -40,8 +40,7 @@ def fetch_prices():
             'XRP': 'Ripple',
             'SOL': 'Solana',
             'DOGE': 'Dogecoin',
-            'DOT': 'Polkadot',
-            'SHIB': 'Shiba Inu',
+            'DOT': 'Polkadot'
             'TRX': 'Tron',
             'APT': 'Aptos',
             'NEAR': 'NEAR Protocol',
