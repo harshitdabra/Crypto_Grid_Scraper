@@ -40,7 +40,7 @@ def fetch_prices():
             'XRP': 'Ripple',
             'SOL': 'Solana',
             'DOGE': 'Dogecoin',
-            'DOT': 'Polkadot'
+            'DOT': 'Polkadot',
             'TRX': 'Tron',
             'APT': 'Aptos',
             'NEAR': 'NEAR Protocol',
