@@ -1,0 +1,11 @@
+{
+  "name": "crypto_grid_scraper",
+  "version": "1.0.0",
+  "private": true,
+  "devDependencies": {
+    "vercel": "^54.4.1"
+  },
+  "scripts": {
+    "vercel": "vercel"
+  }
+}
